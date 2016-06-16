@@ -17,16 +17,16 @@ type DelegatingCarrier interface {
 }
 
 func (p *accessorPropagator) Inject(
-	spanContext opentracing.SpanContext,
+	spanContext opentracing.SpanMetadata,
 	carrier interface{},
 ) error {
 	dc, ok := carrier.(DelegatingCarrier)
 	if !ok || dc == nil {
 		return opentracing.ErrInvalidCarrier
 	}
-	sc, ok := spanContext.(*SpanContext)
+	sc, ok := spanContext.(*SpanMetadata)
 	if !ok {
-		return opentracing.ErrInvalidSpanContext
+		return opentracing.ErrInvalidSpanMetadata
 	}
 	dc.SetState(sc.TraceID, sc.SpanID, sc.Sampled)
 	for k, v := range sc.Baggage {
@@ -37,14 +37,14 @@ func (p *accessorPropagator) Inject(
 
 func (p *accessorPropagator) Extract(
 	carrier interface{},
-) (opentracing.SpanContext, error) {
+) (opentracing.SpanMetadata, error) {
 	dc, ok := carrier.(DelegatingCarrier)
 	if !ok || dc == nil {
 		return nil, opentracing.ErrInvalidCarrier
 	}
 
 	traceID, spanID, sampled := dc.State()
-	sc := &SpanContext{
+	sc := &SpanMetadata{
 		TraceID: traceID,
 		SpanID:  spanID,
 		Sampled: sampled,

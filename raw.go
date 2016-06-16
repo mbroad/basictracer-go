@@ -8,11 +8,11 @@ import (
 
 // RawSpan encapsulates all state associated with a (finished) Span.
 type RawSpan struct {
-	// The RawSpan embeds its SpanContext. Those recording the RawSpan
-	// should also record the contents of its SpanContext.
-	SpanContext
+	// The RawSpan embeds its SpanMetadata. Those recording the RawSpan
+	// should also record the contents of its SpanMetadata.
+	SpanMetadata
 
-	// The SpanID of this SpanContext's parent, or 0 if there is no parent.
+	// The SpanID of this SpanMetadata's parent, or 0 if there is no parent.
 	ParentSpanID uint64
 
 	// The name of the "operation" this span is an instance of. (Called a "span

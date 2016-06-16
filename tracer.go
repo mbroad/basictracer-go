@@ -157,7 +157,7 @@ func (t *tracerImpl) StartSpanWithOptions(
 		sp.raw.TraceID, sp.raw.SpanID = randomID2()
 		sp.raw.Sampled = t.options.ShouldSample(sp.raw.TraceID)
 	} else {
-		pc := opts.CausalReferences[0].SpanContext.(*SpanContext)
+		pc := opts.CausalReferences[0].SpanMetadata.(*SpanMetadata)
 		sp.raw.TraceID = pc.TraceID
 		sp.raw.SpanID = randomID()
 		sp.raw.ParentSpanID = pc.SpanID
@@ -205,7 +205,7 @@ type delegatorType struct{}
 // Delegator is the format to use for DelegatingCarrier.
 var Delegator delegatorType
 
-func (t *tracerImpl) Inject(sc opentracing.SpanContext, format interface{}, carrier interface{}) error {
+func (t *tracerImpl) Inject(sc opentracing.SpanMetadata, format interface{}, carrier interface{}) error {
 	switch format {
 	case opentracing.TextMap:
 		return t.textPropagator.Inject(sc, carrier)
@@ -218,7 +218,7 @@ func (t *tracerImpl) Inject(sc opentracing.SpanContext, format interface{}, carr
 	return opentracing.ErrUnsupportedFormat
 }
 
-func (t *tracerImpl) Extract(format interface{}, carrier interface{}) (opentracing.SpanContext, error) {
+func (t *tracerImpl) Extract(format interface{}, carrier interface{}) (opentracing.SpanMetadata, error) {
 	switch format {
 	case opentracing.TextMap:
 		return t.textPropagator.Extract(carrier)

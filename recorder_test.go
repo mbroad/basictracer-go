@@ -45,10 +45,10 @@ func TestInMemoryRecorderSpans(t *testing.T) {
 	recorder := NewInMemoryRecorder()
 	var apiRecorder SpanRecorder = recorder
 	span := RawSpan{
-		SpanContext: SpanContext{},
-		Operation:   "test-span",
-		Start:       time.Now(),
-		Duration:    -1,
+		SpanMetadata: SpanMetadata{},
+		Operation:    "test-span",
+		Start:        time.Now(),
+		Duration:     -1,
 	}
 	apiRecorder.RecordSpan(span)
 	if len(recorder.GetSpans()) != 1 {

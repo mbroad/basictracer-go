@@ -150,8 +150,8 @@ func (s *spanImpl) Tracer() opentracing.Tracer {
 	return s.tracer
 }
 
-func (s *spanImpl) SpanContext() opentracing.SpanContext {
-	return &s.raw.SpanContext
+func (s *spanImpl) Metadata() opentracing.SpanMetadata {
+	return &s.raw.SpanMetadata
 }
 
 func (s *spanImpl) Operation() string {

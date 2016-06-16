@@ -29,12 +29,12 @@ const (
 )
 
 func (p *textMapPropagator) Inject(
-	spanContext opentracing.SpanContext,
+	spanContext opentracing.SpanMetadata,
 	opaqueCarrier interface{},
 ) error {
-	sc, ok := spanContext.(*SpanContext)
+	sc, ok := spanContext.(*SpanMetadata)
 	if !ok {
-		return opentracing.ErrInvalidSpanContext
+		return opentracing.ErrInvalidSpanMetadata
 	}
 	carrier, ok := opaqueCarrier.(opentracing.TextMapWriter)
 	if !ok {
@@ -54,7 +54,7 @@ func (p *textMapPropagator) Inject(
 
 func (p *textMapPropagator) Extract(
 	opaqueCarrier interface{},
-) (opentracing.SpanContext, error) {
+) (opentracing.SpanMetadata, error) {
 	carrier, ok := opaqueCarrier.(opentracing.TextMapReader)
 	if !ok {
 		return nil, opentracing.ErrInvalidCarrier
@@ -69,17 +69,17 @@ func (p *textMapPropagator) Extract(
 		case fieldNameTraceID:
 			traceID, err = strconv.ParseUint(v, 16, 64)
 			if err != nil {
-				return opentracing.ErrSpanContextCorrupted
+				return opentracing.ErrSpanMetadataCorrupted
 			}
 		case fieldNameSpanID:
 			spanID, err = strconv.ParseUint(v, 16, 64)
 			if err != nil {
-				return opentracing.ErrSpanContextCorrupted
+				return opentracing.ErrSpanMetadataCorrupted
 			}
 		case fieldNameSampled:
 			sampled, err = strconv.ParseBool(v)
 			if err != nil {
-				return opentracing.ErrSpanContextCorrupted
+				return opentracing.ErrSpanMetadataCorrupted
 			}
 		default:
 			lowercaseK := strings.ToLower(k)
@@ -97,12 +97,12 @@ func (p *textMapPropagator) Extract(
 	}
 	if requiredFieldCount < tracerStateFieldCount {
 		if requiredFieldCount == 0 {
-			return nil, opentracing.ErrSpanContextNotFound
+			return nil, opentracing.ErrSpanMetadataNotFound
 		}
-		return nil, opentracing.ErrSpanContextCorrupted
+		return nil, opentracing.ErrSpanMetadataCorrupted
 	}
 
-	return &SpanContext{
+	return &SpanMetadata{
 		TraceID: traceID,
 		SpanID:  spanID,
 		Sampled: sampled,
@@ -111,12 +111,12 @@ func (p *textMapPropagator) Extract(
 }
 
 func (p *binaryPropagator) Inject(
-	spanContext opentracing.SpanContext,
+	spanContext opentracing.SpanMetadata,
 	opaqueCarrier interface{},
 ) error {
-	sc, ok := spanContext.(*SpanContext)
+	sc, ok := spanContext.(*SpanMetadata)
 	if !ok {
-		return opentracing.ErrInvalidSpanContext
+		return opentracing.ErrInvalidSpanMetadata
 	}
 	carrier, ok := opaqueCarrier.(io.Writer)
 	if !ok {
@@ -146,7 +146,7 @@ func (p *binaryPropagator) Inject(
 
 func (p *binaryPropagator) Extract(
 	opaqueCarrier interface{},
-) (opentracing.SpanContext, error) {
+) (opentracing.SpanMetadata, error) {
 	carrier, ok := opaqueCarrier.(io.Reader)
 	if !ok {
 		return nil, opentracing.ErrInvalidCarrier
@@ -158,22 +158,22 @@ func (p *binaryPropagator) Extract(
 	// the exact amount of bytes into it.
 	var length uint32
 	if err := binary.Read(carrier, binary.BigEndian, &length); err != nil {
-		return nil, opentracing.ErrSpanContextCorrupted
+		return nil, opentracing.ErrSpanMetadataCorrupted
 	}
 	buf := make([]byte, length)
 	if n, err := carrier.Read(buf); err != nil {
 		if n > 0 {
-			return nil, opentracing.ErrSpanContextCorrupted
+			return nil, opentracing.ErrSpanMetadataCorrupted
 		}
-		return nil, opentracing.ErrSpanContextNotFound
+		return nil, opentracing.ErrSpanMetadataNotFound
 	}
 
 	ctx := wire.TracerState{}
 	if err := proto.Unmarshal(buf, &ctx); err != nil {
-		return nil, opentracing.ErrSpanContextCorrupted
+		return nil, opentracing.ErrSpanMetadataCorrupted
 	}
 
-	return &SpanContext{
+	return &SpanMetadata{
 		TraceID: ctx.TraceId,
 		SpanID:  ctx.SpanId,
 		Sampled: ctx.Sampled,

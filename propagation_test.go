@@ -13,7 +13,7 @@ import (
 )
 
 type verbatimCarrier struct {
-	basictracer.SpanContext
+	basictracer.SpanMetadata
 	b map[string]string
 }
 
@@ -30,11 +30,11 @@ func (vc *verbatimCarrier) GetBaggage(f func(string, string)) {
 }
 
 func (vc *verbatimCarrier) SetState(tID, sID uint64, sampled bool) {
-	vc.SpanContext = basictracer.SpanContext{TraceID: tID, SpanID: sID, Sampled: sampled}
+	vc.SpanMetadata = basictracer.SpanMetadata{TraceID: tID, SpanID: sID, Sampled: sampled}
 }
 
 func (vc *verbatimCarrier) State() (traceID, spanID uint64, sampled bool) {
-	return vc.SpanContext.TraceID, vc.SpanContext.SpanID, vc.SpanContext.Sampled
+	return vc.SpanMetadata.TraceID, vc.SpanMetadata.SpanID, vc.SpanMetadata.Sampled
 }
 
 func TestSpanPropagator(t *testing.T) {
@@ -43,7 +43,7 @@ func TestSpanPropagator(t *testing.T) {
 	tracer := basictracer.New(recorder)
 
 	sp := tracer.StartSpan(op)
-	sp.SpanContext().SetBaggageItem("foo", "bar")
+	sp.Metadata().SetBaggageItem("foo", "bar")
 
 	tmc := opentracing.HTTPHeaderTextMapCarrier(http.Header{})
 	tests := []struct {
@@ -55,7 +55,7 @@ func TestSpanPropagator(t *testing.T) {
 	}
 
 	for i, test := range tests {
-		if err := tracer.Inject(sp.SpanContext(), test.typ, test.carrier); err != nil {
+		if err := tracer.Inject(sp.Metadata(), test.typ, test.carrier); err != nil {
 			t.Fatalf("%d: %v", i, err)
 		}
 		injectedContext, err := tracer.Extract(test.typ, test.carrier)
