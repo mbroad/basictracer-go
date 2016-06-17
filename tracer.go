@@ -151,26 +151,36 @@ func (t *tracerImpl) StartSpanWithOptions(
 	tags := opts.Tags
 
 	// Build the new span. This is the only allocation: We'll return this as
-	// a opentracing.Span.
+	// an opentracing.Span.
 	sp := t.getSpan()
-	if len(opts.References) == 0 {
+	// Look for a parent in the list of References.
+	//
+	// TODO: would be nice if basictracer did something with all
+	// References, not just the first one.
+	for _, ref := range opts.References {
+		if ref.Type.IntraTrace() {
+			refMD := ref.Metadata.(*SpanMetadata)
+			sp.raw.TraceID = refMD.TraceID
+			sp.raw.SpanID = randomID()
+			sp.raw.ParentSpanID = refMD.SpanID
+			sp.raw.Sampled = refMD.Sampled
+
+			refMD.baggageLock.Lock()
+			if l := len(refMD.Baggage); l > 0 {
+				sp.raw.Baggage = make(map[string]string, len(refMD.Baggage))
+				for k, v := range refMD.Baggage {
+					sp.raw.Baggage[k] = v
+				}
+			}
+			refMD.baggageLock.Unlock()
+			break
+		}
+	}
+	if sp.raw.TraceID == 0 {
+		// No parent Span found; allocate new trace and span ids and determine
+		// the Sampled status.
 		sp.raw.TraceID, sp.raw.SpanID = randomID2()
 		sp.raw.Sampled = t.options.ShouldSample(sp.raw.TraceID)
-	} else {
-		pc := opts.References[0].Metadata.(*SpanMetadata)
-		sp.raw.TraceID = pc.TraceID
-		sp.raw.SpanID = randomID()
-		sp.raw.ParentSpanID = pc.SpanID
-		sp.raw.Sampled = pc.Sampled
-
-		pc.baggageLock.Lock()
-		if l := len(pc.Baggage); l > 0 {
-			sp.raw.Baggage = make(map[string]string, len(pc.Baggage))
-			for k, v := range pc.Baggage {
-				sp.raw.Baggage[k] = v
-			}
-		}
-		pc.baggageLock.Unlock()
 	}
 
 	return t.startSpanInternal(

@@ -12,7 +12,8 @@ type RawSpan struct {
 	// should also record the contents of its SpanMetadata.
 	SpanMetadata
 
-	// The SpanID of this SpanMetadata's parent, or 0 if there is no parent.
+	// The SpanID of this SpanMetadata's first intra-trace reference (i.e.,
+	// "parent"), or 0 if there is no parent.
 	ParentSpanID uint64
 
 	// The name of the "operation" this span is an instance of. (Called a "span
