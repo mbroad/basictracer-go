@@ -123,7 +123,7 @@ func (t *tracerImpl) StartSpan(
 ) opentracing.Span {
 	sso := opentracing.StartSpanOptions{}
 	for _, o := range opts {
-		o(&sso)
+		o.Apply(&sso)
 	}
 	return t.StartSpanWithOptions(operationName, sso)
 }
@@ -153,11 +153,11 @@ func (t *tracerImpl) StartSpanWithOptions(
 	// Build the new span. This is the only allocation: We'll return this as
 	// a opentracing.Span.
 	sp := t.getSpan()
-	if len(opts.CausalReferences) == 0 {
+	if len(opts.References) == 0 {
 		sp.raw.TraceID, sp.raw.SpanID = randomID2()
 		sp.raw.Sampled = t.options.ShouldSample(sp.raw.TraceID)
 	} else {
-		pc := opts.CausalReferences[0].SpanMetadata.(*SpanMetadata)
+		pc := opts.References[0].Metadata.(*SpanMetadata)
 		sp.raw.TraceID = pc.TraceID
 		sp.raw.SpanID = randomID()
 		sp.raw.ParentSpanID = pc.SpanID

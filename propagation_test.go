@@ -64,7 +64,7 @@ func TestSpanPropagator(t *testing.T) {
 		}
 		child := tracer.StartSpan(
 			op,
-			opentracing.Reference(opentracing.RefBlockedParent, injectedContext))
+			opentracing.RefBlockedParent.Point(injectedContext))
 		child.Finish()
 	}
 	sp.Finish()

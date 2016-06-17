@@ -63,7 +63,7 @@ func server() {
 		}
 		serverSpan := opentracing.GlobalTracer().StartSpan(
 			"serverSpan",
-			opentracing.Reference(opentracing.RefRPCClient, wireSpanMetadata))
+			opentracing.RefRPCClient.Point(wireSpanMetadata))
 		serverSpan.SetTag("component", "server")
 		defer serverSpan.Finish()
 
