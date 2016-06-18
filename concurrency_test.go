@@ -87,7 +87,7 @@ func TestConcurrentUsage(t *testing.T) {
 				sp.SetOperationName("x")
 				csp := tracer.StartSpan(
 					"csp",
-					opentracing.RefBlockedParent.Point(sp.Metadata()))
+					opentracing.BlockedParent.PointTo(sp.Metadata()))
 				csp.Finish()
 				defer sp.Finish()
 			}
@@ -107,6 +107,6 @@ func TestDisableSpanPool(t *testing.T) {
 	// This shouldn't panic.
 	child := tracer.StartSpan(
 		"child",
-		opentracing.RefBlockedParent.Point(parent.Metadata()))
+		opentracing.BlockedParent.PointTo(parent.Metadata()))
 	child.Finish()
 }
