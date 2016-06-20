@@ -165,7 +165,7 @@ ReferencesLoop:
 			opentracing.StartedBefore,
 			opentracing.FinishedBefore:
 
-			refMD := ref.Metadata.(*SpanMetadata)
+			refMD := ref.Referee.(*SpanMetadata)
 			sp.raw.TraceID = refMD.TraceID
 			sp.raw.SpanID = randomID()
 			sp.raw.ParentSpanID = refMD.SpanID
