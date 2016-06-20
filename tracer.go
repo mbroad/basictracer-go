@@ -157,8 +157,14 @@ func (t *tracerImpl) StartSpanWithOptions(
 	//
 	// TODO: would be nice if basictracer did something with all
 	// References, not just the first one.
+ReferencesLoop:
 	for _, ref := range opts.References {
-		if ref.Type.IntraTrace() {
+		switch ref.Type {
+		case opentracing.BlockedParent,
+			opentracing.RPCClient,
+			opentracing.StartedBefore,
+			opentracing.FinishedBefore:
+
 			refMD := ref.Metadata.(*SpanMetadata)
 			sp.raw.TraceID = refMD.TraceID
 			sp.raw.SpanID = randomID()
@@ -173,7 +179,7 @@ func (t *tracerImpl) StartSpanWithOptions(
 				}
 			}
 			refMD.baggageLock.Unlock()
-			break
+			break ReferencesLoop
 		}
 	}
 	if sp.raw.TraceID == 0 {
