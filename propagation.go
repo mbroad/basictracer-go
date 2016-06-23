@@ -68,7 +68,7 @@ func (p *accessorPropagator) Join(
 	return p.tracer.startSpanInternal(
 		sp,
 		operationName,
-		time.Now(),
+		time.Now().UTC(),
 		nil,
 	), nil
 }

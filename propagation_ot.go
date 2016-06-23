@@ -118,7 +118,7 @@ func (p *textMapPropagator) Join(
 	return p.tracer.startSpanInternal(
 		sp,
 		operationName,
-		time.Now(),
+		time.Now().UTC(),
 		nil,
 	), nil
 }
@@ -202,7 +202,7 @@ func (p *binaryPropagator) Join(
 	return p.tracer.startSpanInternal(
 		sp,
 		operationName,
-		time.Now(),
+		time.Now().UTC(),
 		nil,
 	), nil
 }

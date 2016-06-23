@@ -47,7 +47,7 @@ func TestInMemoryRecorderSpans(t *testing.T) {
 	span := RawSpan{
 		Context:   Context{},
 		Operation: "test-span",
-		Start:     time.Now(),
+		Start:     time.Now().UTC(),
 		Duration:  -1,
 	}
 	apiRecorder.RecordSpan(span)

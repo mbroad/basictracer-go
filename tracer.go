@@ -141,7 +141,7 @@ func (t *tracerImpl) StartSpanWithOptions(
 	// Start time.
 	startTime := opts.StartTime
 	if startTime.IsZero() {
-		startTime = time.Now()
+		startTime = time.Now().UTC()
 	}
 
 	// Tags.

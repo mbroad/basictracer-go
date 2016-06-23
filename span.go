@@ -110,7 +110,7 @@ func (s *spanImpl) Log(ld opentracing.LogData) {
 	}
 
 	if ld.Timestamp.IsZero() {
-		ld.Timestamp = time.Now()
+		ld.Timestamp = time.Now().UTC()
 	}
 
 	s.raw.Logs = append(s.raw.Logs, ld)
@@ -123,7 +123,7 @@ func (s *spanImpl) Finish() {
 func (s *spanImpl) FinishWithOptions(opts opentracing.FinishOptions) {
 	finishTime := opts.FinishTime
 	if finishTime.IsZero() {
-		finishTime = time.Now()
+		finishTime = time.Now().UTC()
 	}
 	duration := finishTime.Sub(s.raw.Start)
 
